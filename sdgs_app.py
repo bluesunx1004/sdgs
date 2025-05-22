@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # sdgs_app.py
 
 import streamlit as st
