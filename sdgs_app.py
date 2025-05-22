@@ -1,8 +1,10 @@
+# sdgs_app.py
+
 # -*- coding: utf-8 -*-
 import streamlit as st
 import os
 
-# SDG 정보 (간단히 3개만 예시)
+# 🔽 외부 파일에서 가져오지 말고, 여기 직접 SDGS 정의
 SDGS = [
     {
         "id": 1,
@@ -18,13 +20,7 @@ SDGS = [
         "detail": "지속가능한 농업 시스템을 촉진하여 모든 사람에게 안정적인 식량을 보장합니다.",
         "example": "국내: 무상급식\n해외: FAO 식량지원 프로그램"
     },
-    {
-        "id": 3,
-        "title": "건강과 웰빙",
-        "short": "모든 연령대의 건강한 삶을 보장하자.",
-        "detail": "질병 예방, 정신 건강 개선, 출산 지원 등을 통해 보편적인 건강 시스템 구축을 지향합니다.",
-        "example": "국내: 건강보험\n해외: WHO 백신 보급"
-    },
+    # ... 나머지 3~17번 목표도 추가로 정의
 ]
 
 st.set_page_config(page_title="SDGs 소개", layout="wide")
