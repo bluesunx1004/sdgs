@@ -138,11 +138,8 @@ for i in range(0, len(SDGS), 3):
     for j in range(3):
         if i + j < len(SDGS):
             sdg = SDGS[i + j]
-            with cols[j]:
-                with st.expander(f"🎯 {sdg['id']}. {sdg['title']}"):
-                    image_path = f"images/sdg{sdg['id']}.png"
-                    if os.path.exists(image_path):
-                        st.image(image_path, width=100)
-                    st.write(f"**간단 설명:** {sdg['short']}")
-                    st.write(f"**자세한 설명:** {sdg['detail']}")
-                    st.write(f"**사례:**\n{sdg['example']}")
+           with cols[j]:
+            with st.expander(f"🎯 {sdg['id']}. {sdg['title']}"):
+                st.markdown(f"**간단 설명:** {sdg['short']}")
+                st.markdown(f"**자세한 설명:** {sdg['detail']}")
+                st.markdown(f"**사례:**\n{sdg['example']}")
