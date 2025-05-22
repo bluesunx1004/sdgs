@@ -141,8 +141,13 @@ for i in range(0, len(SDGS), 3):
             with cols[j]:
                 with st.expander(f"🎯 {sdg['id']}. {sdg['title']}"):
                     image_path = f"images/sdg{sdg['id']}.png"
+
+                    # 이미지가 존재하면 출력하고, 없어도 텍스트는 출력되도록!
                     if os.path.exists(image_path):
                         st.image(image_path, width=100)
+                    else:
+                        st.write(f"🖼 이미지 없음 (경로: `{image_path}`)")
+
                     st.write(f"**간단 설명:** {sdg['short']}")
                     st.write(f"**자세한 설명:** {sdg['detail']}")
                     st.write(f"**사례:**\n{sdg['example']}")
