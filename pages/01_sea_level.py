@@ -6,6 +6,20 @@ import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import st_folium
 
+import matplotlib.font_manager as fm
+import platform
+
+# 한글 폰트 설정
+if platform.system() == 'Windows':
+    plt.rc('font', family='Malgun Gothic')
+elif platform.system() == 'Darwin':  # macOS
+    plt.rc('font', family='AppleGothic')
+else:  # Linux (Streamlit Cloud 포함)
+    plt.rc('font', family='NanumGothic')
+
+# 마이너스 깨짐 방지
+plt.rcParams['axes.unicode_minus'] = False
+
 # 데이터 로드
 @st.cache_data
 def load_data():
