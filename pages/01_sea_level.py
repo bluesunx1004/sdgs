@@ -8,7 +8,8 @@ from streamlit_folium import st_folium
 
 import matplotlib.font_manager as fm
 import platform
-
+import subprocess
+subprocess.run(["apt-get", "install", "-y", "fonts-nanum"], check=True)
 # 한글 폰트 설정
 if platform.system() == 'Windows':
     plt.rc('font', family='Malgun Gothic')
