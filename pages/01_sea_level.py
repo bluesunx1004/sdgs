@@ -10,6 +10,16 @@ import platform
 import folium
 from streamlit_folium import st_folium
 
+import matplotlib.font_manager as fm
+
+# 프로젝트에 포함된 NanumGothic.ttf 사용
+font_path = "NanumGothic.ttf"
+font_prop = fm.FontProperties(fname=font_path)
+
+# 한글 깨짐 방지 적용
+plt.rcParams['font.family'] = font_prop.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+
 # ✅ 한글 폰트 설정
 if platform.system() == 'Windows':
     plt.rc('font', family='Malgun Gothic')
@@ -18,7 +28,6 @@ elif platform.system() == 'Darwin':
 else:
     plt.rc('font', family='NanumGothic')
 
-plt.rcParams['axes.unicode_minus'] = False
 
 # ✅ 데이터 로딩
 @st.cache_data
