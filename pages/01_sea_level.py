@@ -49,7 +49,7 @@ st.subheader("📈 연도별 해수면 상승 추이")
 
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.plot(df['Year'], df['SmoothedGSML_GIA'], marker='o', color='blue')
-ax.set_xlabel("연도")
+ax.set_xlabel("Year")
 ax.set_ylabel("Global Mean Sea Level rise (mm)")
 ax.set_title("Global Mean Sea Level Rise (Smoothed GIA-Corrected)")
 ax.grid(True)
