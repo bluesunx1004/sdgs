@@ -51,7 +51,7 @@ fig, ax = plt.subplots(figsize=(10, 4))
 ax.plot(df['Year'], df['SmoothedGSML_GIA'], marker='o', color='blue')
 ax.set_xlabel("연도")
 ax.set_ylabel("GMSL 상승(mm)")
-ax.set_title("전 지구 평균 해수면 상승 (Smoothed GIA 보정)")
+ax.set_title("Global Mean Sea Level Rise (Smoothed GIA-Corrected)")
 ax.grid(True)
 st.pyplot(fig)
 
