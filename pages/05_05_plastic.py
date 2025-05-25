@@ -30,17 +30,29 @@ elif total_today <= 3:
 else:
     st.warning("😢 오늘 플라스틱 사용이 많았어요. 대신할 수 있는 대안을 생각해봐요!")
 
-# 📈 연도별 전 세계 플라스틱 생산량 샘플 데이터
-st.subheader("📊 전 세계 플라스틱 생산량 추이")
+df = pd.read_csv("Plastic Waste Around the World.csv")
 
-df = pd.DataFrame({
-    "연도": list(range(2000, 2024, 2)),
-    "플라스틱 생산량 (백만 톤)": [200, 220, 240, 270, 290, 310, 340, 370, 400, 420, 450, 475]
-})
+# 1. 국가별 플라스틱 폐기량
+st.subheader("📊 국가별 총 플라스틱 폐기량 (백만 톤)")
+fig1 = px.bar(df.sort_values(by="Total_Plastic_Waste_MT", ascending=False),
+              x="Country", y="Total_Plastic_Waste_MT", color="Main_Sources")
+st.plotly_chart(fig1, use_container_width=True)
 
-fig = px.line(df, x="연도", y="플라스틱 생산량 (백만 톤)", markers=True,
-              title="전 세계 플라스틱 생산량 증가 추이")
-st.plotly_chart(fig, use_container_width=True)
+# 2. 1인당 배출 vs 재활용률
+st.subheader("♻️ 1인당 플라스틱 배출량 vs 재활용률")
+fig2 = px.scatter(df, x="Per_Capita_Waste_KG", y="Recycling_Rate",
+                  color="Coastal_Waste_Risk", hover_name="Country", size="Total_Plastic_Waste_MT")
+st.plotly_chart(fig2, use_container_width=True)
+
+# 3. 국가 선택 분석기
+st.subheader("🔍 국가별 분석기")
+country = st.selectbox("국가를 선택하세요", df["Country"].unique())
+row = df[df["Country"] == country].iloc[0]
+st.metric("총 플라스틱 폐기량", f"{row['Total_Plastic_Waste_MT']} 백만 톤")
+st.metric("재활용률", f"{row['Recycling_Rate']} %")
+st.metric("1인당 배출량", f"{row['Per_Capita_Waste_KG']} kg")
+st.info(f"해안 폐기물 위험도: **{row['Coastal_Waste_Risk']}**")
+
 
 # 🎥 해양 쓰레기 유튜브 영상
 st.subheader("🌊 해양 쓰레기 문제, 얼마나 심각할까요?")
