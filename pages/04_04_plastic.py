@@ -76,8 +76,4 @@ col1, col2, col3 = st.columns([1, 2, 1])  # 가운데 2 비율만 차지
 with col2:
     st.video("https://youtu.be/j7jCm0-7UiY?feature=shared")
 
-# 🔁 지속 실천 독려
-st.markdown("""
-> 💡 오늘부터 작은 실천이 모여 큰 변화를 만들어냅니다.  
-> 내일은 텀블러 하나, 에코백 하나 챙겨보는 건 어떨까요?
-""")
+
