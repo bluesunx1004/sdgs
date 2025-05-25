@@ -43,8 +43,11 @@ fig = px.line(df, x="연도", y="플라스틱 생산량 (백만 톤)", markers=T
 st.plotly_chart(fig, use_container_width=True)
 
 # 🎥 해양 쓰레기 유튜브 영상
-st.subheader("🌊 해양 쓰레기 문제, 얼마나 심각할까요?")
-st.video("https://youtu.be/j7jCm0-7UiY?feature=shared")
+col1, col2, col3 = st.columns([1, 2, 1])  # 가운데 2 비율만 차지
+
+with col2:
+    st.subheader("🌊 해양 쓰레기 문제, 얼마나 심각할까요?")
+    st.video("https://youtu.be/j7jCm0-7UiY?feature=shared")
 
 # 🔁 지속 실천 독려
 st.markdown("""
