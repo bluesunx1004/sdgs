@@ -33,11 +33,11 @@ else:
 df = pd.read_csv("Plastic Waste Around the World.csv")
 
 # 1. 국가별 플라스틱 폐기량
-st.subheader("📊 상위 10개국 총 플라스틱 폐기량")
+st.subheader("📊 상위 20개국 총 플라스틱 폐기량")
 
-top10 = df.sort_values(by="Total_Plastic_Waste_MT", ascending=False).head(10)
+top10 = df.sort_values(by="Total_Plastic_Waste_MT", ascending=False).head(20)
 
-fig1 = px.bar(top10,
+fig1 = px.bar(top20,
               x="Country", y="Total_Plastic_Waste_MT",
               color="Main_Sources",
               title="플라스틱 폐기량 상위 10개국 (백만 톤 기준)")
