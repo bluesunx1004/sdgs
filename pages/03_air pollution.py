@@ -44,6 +44,17 @@ selected_month = datetime.strptime(selected_month_str + "-01", "%Y-%m-%d")
 last_date = datetime.combine(city_df['날짜'].max(), datetime.min.time())
 days_ahead = (selected_month - last_date).days
 
+def get_air_quality_grade(pm10):
+    if pm10 <= 30:
+        return "좋음", "😃 공기 상태가 매우 좋아요! 야외 활동하기에 적합합니다.", "success"
+    elif pm10 <= 80:
+        return "보통", "😐 공기 상태가 보통입니다. 민감군은 주의해주세요.", "info"
+    elif pm10 <= 150:
+        return "나쁨", "😷 공기가 탁해요. 가급적 외출을 자제하고, 마스크 착용을 권장합니다.", "warning"
+    else:
+        return "매우 나쁨", "😡 공기 질이 매우 나쁩니다. 외출을 삼가고 실내 환기도 주의하세요.", "error"
+
+        
 # 유효성 검사
 if days_ahead < 1:
     st.warning("선택한 달은 이미 예측 범위 안에 있어요. 이후 달을 선택해 주세요.")
@@ -60,3 +71,12 @@ else:
     predicted_pm10 = round(predicted_pm10, 2)
 
     st.success(f"📌 예측된 {selected_month_str}의 PM10 수치는 **{predicted_pm10} ㎍/m³** 입니다.")
+    
+    if msg_type == "success":
+        st.success(f"🌬 예보된 등급: **{grade}**  \n{message}")
+    elif msg_type == "info":
+        st.info(f"🌬 예보된 등급: **{grade}**  \n{message}")
+    elif msg_type == "warning":
+        st.warning(f"🌬 예보된 등급: **{grade}**  \n{message}")
+    else:
+        st.error(f"🌬 예보된 등급: **{grade}**  \n{message}")
