@@ -6,3 +6,4 @@ folium
 streamlit-folium
 fonttools
 scikit-learn
+numpy
