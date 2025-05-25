@@ -38,13 +38,7 @@ fig1 = px.bar(df.sort_values(by="Total_Plastic_Waste_MT", ascending=False),
               x="Country", y="Total_Plastic_Waste_MT", color="Main_Sources")
 st.plotly_chart(fig1, use_container_width=True)
 
-# 2. 1인당 배출 vs 재활용률
-st.subheader("♻️ 1인당 플라스틱 배출량 vs 재활용률")
-fig2 = px.scatter(df, x="Per_Capita_Waste_KG", y="Recycling_Rate",
-                  color="Coastal_Waste_Risk", hover_name="Country", size="Total_Plastic_Waste_MT")
-st.plotly_chart(fig2, use_container_width=True)
-
-# 3. 국가 선택 분석기
+# 2.국가 선택 분석기
 st.subheader("🔍 국가별 분석기")
 country = st.selectbox("국가를 선택하세요", df["Country"].unique())
 row = df[df["Country"] == country].iloc[0]
