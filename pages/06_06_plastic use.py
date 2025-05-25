@@ -1,11 +1,12 @@
 import streamlit as st
+from datetime import date
 
 st.set_page_config(page_title="플라스틱 사용량 추적기", layout="wide")
 st.title("🧃 나의 일회용 플라스틱 사용량 추적기")
 
 st.markdown("""
 이 앱은 **당신의 일회용 플라스틱 사용 습관**을 추적하고,  
-전 세계 플라스틱 소비 추세와 해양 쓰레기 문제에 대해 인식할 수 있도록 도와줍니다.  
+전 세계 플라스틱 소비 추세와 지구의 쓰레기 문제에 대해 인식할 수 있도록 도와줍니다.  
 """)
 
 # 🎯 사용자 입력: 오늘 사용한 일회용 플라스틱
