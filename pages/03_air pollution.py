@@ -41,7 +41,7 @@ selected_month_str = st.selectbox("예측할 월을 선택하세요", month_opti
 
 # 선택한 달의 첫날을 datetime 객체로 변환
 selected_month = datetime.strptime(selected_month_str + "-01", "%Y-%m-%d")
-last_date = city_df['날짜'].max()
+last_date = datetime.combine(city_df['날짜'].max(), datetime.min.time())
 days_ahead = (selected_month - last_date).days
 
 # 유효성 검사
