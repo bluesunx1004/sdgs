@@ -59,16 +59,16 @@ def get_air_quality_grade(pm10):
 if days_ahead < 1:
     st.warning("선택한 달은 이미 예측 범위 안에 있어요. 이후 달을 선택해 주세요.")
 else:
-    # 모델 학습
+    # ✅ 예측 및 등급 처리 코드: 전부 이 안에서만 실행해야 안전합니다
     X = np.arange(len(city_df)).reshape(-1, 1)
     y = city_df['PM10'].values
     model = LinearRegression()
     model.fit(X, y)
 
-    # 예측 인덱스 계산
     target_index = np.array([[len(city_df) + days_ahead - 1]])
-    predicted_pm10 = model.predict(target_index)[0]
-    predicted_pm10 = round(predicted_pm10, 2)
+    predicted_pm10 = round(model.predict(target_index)[0], 2)
+
+    grade, message, msg_type = get_air_quality_grade(predicted_pm10)
 
     st.success(f"📌 예측된 {selected_month_str}의 PM10 수치는 **{predicted_pm10} ㎍/m³** 입니다.")
     
