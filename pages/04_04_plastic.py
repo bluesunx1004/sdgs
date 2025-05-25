@@ -6,7 +6,14 @@ from datetime import date
 df = pd.read_csv("Plastic Waste Around the World.csv") 
 
 st.set_page_config(page_title="국가별 플라스틱 폐기물 현황", layout="wide")
-st.title("📊국가별 플라스틱 폐기물 현황")
+st.title("📊해양 쓰레기 문제, 얼마나 심각할까요")
+
+# 🎥 해양 쓰레기 유튜브 영상
+st.subheader("🌊 해양 쓰레기 문제, 얼마나 심각할까요?")
+col1, col2, col3 = st.columns([1, 2, 1])  # 가운데 2 비율만 차지
+
+with col2:
+    st.video("https://youtu.be/j7jCm0-7UiY?feature=shared")
 
 # 1. 국가별 플라스틱 폐기량
 st.subheader("📊 상위 10개국 총 플라스틱 폐기량")
@@ -70,12 +77,5 @@ fig = px.scatter_geo(
 fig.update_layout(legend_title_text="Coastal Waste Risk")
 
 st.plotly_chart(fig, use_container_width=True)
-
-# 🎥 해양 쓰레기 유튜브 영상
-st.subheader("🌊 해양 쓰레기 문제, 얼마나 심각할까요?")
-col1, col2, col3 = st.columns([1, 2, 1])  # 가운데 2 비율만 차지
-
-with col2:
-    st.video("https://youtu.be/j7jCm0-7UiY?feature=shared")
 
 
