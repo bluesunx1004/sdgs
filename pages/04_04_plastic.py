@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import date
 
-df = pd.read_csv("plastic_production_vs_waste.csv") 
+df = pd.read_csv("Plastic Waste Around the World.csv") 
 
 st.set_page_config(page_title="국가별 플라스틱 폐기물 현황", layout="wide")
 st.title("📊국가별 플라스틱 폐기물 현황")
