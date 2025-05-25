@@ -44,18 +44,6 @@ fig1 = px.bar(top10,
 
 st.plotly_chart(fig1, use_container_width=True)
 
-st.subheader("♻️ 재활용률이 낮은 10개국")
-
-lowest10 = df.sort_values(by="Recycling_Rate", ascending=True).head(10)
-
-fig3 = px.bar(lowest10,
-              x="Country", y="Recycling_Rate",
-              color="Coastal_Waste_Risk",
-              title="재활용률 최하위 10개국 (%)",
-              labels={"Recycling_Rate": "재활용률 (%)"})
-
-st.plotly_chart(fig3, use_container_width=True)
-
 # 2.국가 선택 분석기
 st.subheader("🔍 국가별 분석기")
 country = st.selectbox("국가를 선택하세요", df["Country"].unique())
