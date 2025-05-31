@@ -144,39 +144,60 @@ def pm_to_color(pm):
     else:
         return [255, 0, 0, 160]            # 빨강
 
+# 색상 매핑 함수
+def pm10_color(level):
+    return {
+        "좋음": [0, 128, 255, 160],
+        "보통": [0, 200, 0, 160],
+        "나쁨": [255, 165, 0, 160],
+        "매우나쁨": [255, 0, 0, 160]
+    }[level]
+    
 # (3) 지도 데이터 프레임
 map_df = (
     df_wide[["지역", sel_month]]
     .assign(
-        lat=lambda d: d["지역"].map(lambda x: city_coords[x][0]),
-        lon=lambda d: d["지역"].map(lambda x: city_coords[x][1]),
-        radius=lambda d: d[sel_month] * 500,
+        lat=lambda d: d["지역"].map(lambda x: city_coords.get(x, (0, 0))[0]),
+        lon=lambda d: d["지역"].map(lambda x: city_coords.get(x, (0, 0))[1]),
         pm=lambda d: d[sel_month],
-        등급=lambda d: d[sel_month].apply(pm10_level)
+        등급=lambda d: d[sel_month].apply(pm10_level),
     )
 )
 
+map_df["radius"] = map_df["pm"] * 500
+map_df["color"] = map_df["등급"].apply(pm10_color)
+
+# Pydeck Layer
 layer = pdk.Layer(
     "ScatterplotLayer",
     data=map_df,
     get_position="[lon, lat]",
     get_radius="radius",
-    get_fill_color="[255, 100, 50, 160]",
+    get_fill_color="color",
     pickable=True,
     auto_highlight=True,
 )
 
 view_state = pdk.ViewState(latitude=36.5, longitude=127.8, zoom=5.5)
 
-st.pydeck_chart(
-    pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        tooltip={"text": "{지역}\nPM10: {pm} ㎍/㎥\n등급: {등급}"}
-    )
-)
+st.pydeck_chart(pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={"text": "{지역}\nPM10: {pm} ㎍/㎥\n등급: {등급}"}
+))
 
-
+# -------------------------------
+# 시각화 범례 설명
+st.markdown("---")
+st.markdown("#### 🧭 시각화 정보")
+st.markdown("""
+- **원의 크기**: PM10 농도(㎍/㎥)에 비례  
+- **원의 색상**:
+    - 🔵 **좋음 (0~30)**
+    - 🟢 **보통 (31~80)**
+    - 🟠 **나쁨 (81~150)**
+    - 🔴 **매우나쁨 (151 이상)**
+""")
 # ────────────────────────────────────────────────────────────
 # 7. 토론 질문 · 교육적 함의 · 확장 활동
 # ────────────────────────────────────────────────────────────
