@@ -28,10 +28,7 @@ st.markdown("""
 
 """)
 
-# 대표 이미지 (옵션)
-st.image("https://sdgs.un.org/sites/default/files/2020-09/E_SDG_poster_unedited_0.png", 
-         caption="출처: United Nations (UN SDGs)",
-         use_column_width=True)
+
 
 # 간단한 동기 유발
 st.markdown("""
