@@ -108,7 +108,16 @@ else:
 # 6. 월 선택 → pydeck 지도 (PM10 색상 매핑)
 # ────────────────────────────────────────────────────────────
 st.subheader("② 선택 월 지도 시각화")
-
+def pm10_level(value):
+    if value <= 30:
+        return "좋음"
+    elif value <= 80:
+        return "보통"
+    elif value <= 150:
+        return "나쁨"
+    else:
+        return "매우나쁨"
+        
 month_cols = [c for c in df_wide.columns if c != "지역"]
 sel_month = st.selectbox("보고 싶은 월", month_cols, index=len(month_cols) - 1)
 
@@ -139,13 +148,12 @@ def pm_to_color(pm):
 map_df = (
     df_wide[["지역", sel_month]]
     .assign(
-        lat=lambda d: d["지역"].map(lambda x: city_coords.get(x, (None, None))[0]),
-        lon=lambda d: d["지역"].map(lambda x: city_coords.get(x, (None, None))[1]),
+        lat=lambda d: d["지역"].map(lambda x: city_coords[x][0]),
+        lon=lambda d: d["지역"].map(lambda x: city_coords[x][1]),
         radius=lambda d: d[sel_month] * 500,
-        PM10=lambda d: d[sel_month],
-        color=lambda d: d[sel_month].apply(pm_to_color)
+        pm=lambda d: d[sel_month],
+        등급=lambda d: d[sel_month].apply(pm10_level)
     )
-    .dropna(subset=["lat", "lon"])
 )
 
 layer = pdk.Layer(
@@ -153,7 +161,7 @@ layer = pdk.Layer(
     data=map_df,
     get_position="[lon, lat]",
     get_radius="radius",
-    get_fill_color="color",
+    get_fill_color="[255, 100, 50, 160]",
     pickable=True,
     auto_highlight=True,
 )
@@ -164,9 +172,10 @@ st.pydeck_chart(
     pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        tooltip={"text": "{지역}\nPM10: {PM10} ㎍/㎥"}
+        tooltip={"text": "{지역}\nPM10: {pm} ㎍/㎥\n등급: {등급}"}
     )
 )
+
 
 # ────────────────────────────────────────────────────────────
 # 7. 토론 질문 · 교육적 함의 · 확장 활동
