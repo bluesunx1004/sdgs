@@ -8,40 +8,12 @@ st.set_page_config(page_title="국가별 플라스틱 폐기물 현황", layout=
 st.title("🌍 국가별 플라스틱 폐기물 현황 분석 대시보드")
 
 # 데이터 로드
-#df = pd.read_csv("Plastic Waste Around the World.csv")
+import os
+import pandas as pd
 
-# ────────────────────────────────────────────────────────────
-# 1. CSV 로드 함수 (다중 인코딩 시도)
-# ────────────────────────────────────────────────────────────
-@st.cache_data
-def try_read_csv(path_or_file):
-    encodings = ["utf-8", "utf-8-sig", "cp949", "euc-kr"]
-    for enc in encodings:
-        try:
-            df = pd.read_csv(path_or_file, encoding=enc)
-            st.success(f"✅ CSV 파일을 불러왔습니다 (encoding='{enc}')")
-            return df
-        except UnicodeDecodeError:
-            continue
-    st.error("❌ 파일 인코딩을 감지하지 못했습니다.")
-    return None
-
-# ────────────────────────────────────────────────────────────
-# 2. CSV 확보 (로컬 파일 또는 업로드)
-# ────────────────────────────────────────────────────────────
-DATA_PATH = Path(__file__).parent / "Plastic Waste Around the World.csv"
-
-if DATA_PATH.exists():
-    df_wide = try_read_csv(DATA_PATH)
-else:
-    uploaded = st.file_uploader("📤 CSV 파일 업로드", type=["csv"])
-    if uploaded:
-        df_wide = try_read_csv(uploaded)
-    else:
-        st.stop()          # 파일 없으면 이후 코드 중단
-
-if df_wide is None:
-    st.stop()
+base_path = os.getcwd()
+csv_path = os.path.join(base_path, "Plastic Waste Around the World.csv")
+df = pd.read_csv(csv_path)
 # 위험도 수치화
 risk_map = {"Low": 1, "Medium": 2, "High": 3, "Very_High": 4}
 df["Risk_Level_Num"] = df["Coastal_Waste_Risk"].map(risk_map)
