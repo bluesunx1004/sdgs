@@ -59,10 +59,10 @@ line = ax2.plot(
 ax2.set_ylabel("number", color="orangered")
 ax2.tick_params(axis="y", labelcolor="orangered")
 
-# 범례 결합
-lines_labels = [*zip(bars, [bars[0].get_label()]), *zip(line, [line[0].get_label()])]
-handles, labels = zip(*lines_labels)
-ax1.legend(handles, labels, loc="upper center", ncol=2)
+# ✅ 범례 설정 (각 축의 핸들 수동 결합)
+handles1, labels1 = ax1.get_legend_handles_labels()
+handles2, labels2 = ax2.get_legend_handles_labels()
+ax1.legend(handles1 + handles2, labels1 + labels2, loc="upper center", ncol=2)
 
 ax1.grid(axis="y", linestyle="--", alpha=0.4)
 st.pyplot(fig)
