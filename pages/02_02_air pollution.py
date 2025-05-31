@@ -3,6 +3,39 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import pydeck as pdk
+import os
+from pathlib import Path
+
+st.set_page_config(page_title="PM10 시각화", page_icon="📊", layout="wide")
+st.title("📊 월별‧도시별 미세먼지(PM10) 데이터 탐구")
+
+# ------------------------------------------------------------------
+# 1) 파일 경로 결정
+# ------------------------------------------------------------------
+THIS_DIR = Path(__file__).parent           # pages 폴더
+DATA_PATH = THIS_DIR / "미세먼지_PM10__월별_도시별_대기오염도.csv"
+# 또는  DATA_PATH = THIS_DIR / "data" / "미세먼지_....csv"
+
+# ------------------------------------------------------------------
+# 2) 파일 존재 여부 확인 → 없으면 즉석에서 디버그
+# ------------------------------------------------------------------
+if not DATA_PATH.exists():
+    st.error(f"CSV 파일을 찾을 수 없습니다 👉 {DATA_PATH.as_posix()}")
+    st.write("**현재 폴더의 파일 목록**:", list(THIS_DIR.iterdir()))
+    st.write("**앱이 실행 중인 작업 디렉터리**:", Path.cwd().as_posix())
+    st.write("**작업 디렉터리의 파일 목록**:", os.listdir())
+    st.info("""
+    1) GitHub 리포지토리에 CSV가 커밋됐는지 확인  
+    2) 파일명이 대소문자·공백·확장자까지 정확히 일치하는지 확인  
+    3) 디렉터리 구조가 로컬과 동일하게 배포됐는지 확인  
+    """)
+    uploaded = st.file_uploader("🔄 여기서 직접 CSV 업로드하기", type="csv")
+    if uploaded:
+        df_wide = pd.read_csv(uploaded, encoding="cp949")
+    else:
+        st.stop()
+else:
+    df_wide = pd.read_csv(DATA_PATH, encoding="cp949")
 
 st.set_page_config(page_title="PM10 시각화", page_icon="📊", layout="wide")
 
