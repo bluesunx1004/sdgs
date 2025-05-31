@@ -6,56 +6,44 @@ import pydeck as pdk
 import os
 from pathlib import Path
 
+import streamlit as st
+import pandas as pd
+from pathlib import Path
+
 st.set_page_config(page_title="PM10 시각화", page_icon="📊", layout="wide")
 st.title("📊 월별‧도시별 미세먼지(PM10) 데이터 탐구")
 
-# ------------------------------------------------------------------
-# 1) 파일 경로 결정
-# ------------------------------------------------------------------
-THIS_DIR = Path(__file__).parent           # pages 폴더
-DATA_PATH = THIS_DIR / "미세먼지_PM10__월별_도시별_대기오염도.csv"
-# 또는  DATA_PATH = THIS_DIR / "data" / "미세먼지_....csv"
+@st.cache_data
+def try_read_csv(path_or_file):
+    encodings = ["utf-8", "utf-8-sig", "cp949", "euc-kr"]
+    for enc in encodings:
+        try:
+            df = pd.read_csv(path_or_file, encoding=enc)
+            st.success(f"✅ CSV 파일을 성공적으로 불러왔습니다 (encoding='{enc}')")
+            return df
+        except UnicodeDecodeError:
+            continue
+    st.error("❌ 지원하는 인코딩 형식으로 파일을 열 수 없습니다.")
+    return None
 
-# ------------------------------------------------------------------
-# 2) 파일 존재 여부 확인 → 없으면 즉석에서 디버그
-# ------------------------------------------------------------------
-if not DATA_PATH.exists():
-    st.error(f"CSV 파일을 찾을 수 없습니다 👉 {DATA_PATH.as_posix()}")
-    st.write("**현재 폴더의 파일 목록**:", list(THIS_DIR.iterdir()))
-    st.write("**앱이 실행 중인 작업 디렉터리**:", Path.cwd().as_posix())
-    st.write("**작업 디렉터리의 파일 목록**:", os.listdir())
-    st.info("""
-    1) GitHub 리포지토리에 CSV가 커밋됐는지 확인  
-    2) 파일명이 대소문자·공백·확장자까지 정확히 일치하는지 확인  
-    3) 디렉터리 구조가 로컬과 동일하게 배포됐는지 확인  
-    """)
-    uploaded = st.file_uploader("🔄 여기서 직접 CSV 업로드하기", type="csv")
+# 파일 경로 기반 로드 (배포 시 실제 경로로 수정)
+DATA_PATH = Path(__file__).parent / "미세먼지_PM10__월별_도시별_대기오염도.csv"
+
+# 파일 있으면 우선 시도
+if DATA_PATH.exists():
+    df_wide = try_read_csv(DATA_PATH)
+else:
+    st.warning("⚠️ 파일이 자동으로 로드되지 않았습니다. 아래에서 업로드 해주세요.")
+    uploaded = st.file_uploader("📤 CSV 파일 업로드", type=["csv"])
     if uploaded:
-        df_wide = pd.read_csv(uploaded, encoding="utf-8")
+        df_wide = try_read_csv(uploaded)
     else:
         st.stop()
-else:
-    df_wide = pd.read_csv(DATA_PATH, encoding="cp949")
 
-st.set_page_config(page_title="PM10 시각화", page_icon="📊", layout="wide")
-
-st.title("📊 월별‧도시별 미세먼지(PM10) 데이터 탐구")
-
-# --------------------------------------------------------------------------------
-# 1) 데이터 로드 & 전처리 ----------------------------------------------------------
-# --------------------------------------------------------------------------------
-@st.cache_data
-def load_data():
-    # CSV는 /data 폴더 등에 두어도 되고, 경로만 맞추면 됩니다
-    df = pd.read_csv("미세먼지_PM10__월별_도시별_대기오염도.csv", encoding="utf-8")
-
-    # 긴 형태(long)로 변환 → 선 그래프 편리
-    df_long = df.melt(id_vars=["지역"], var_name="월", value_name="PM10")
-    df_long["date"] = pd.to_datetime(df_long["월"], format="%Y년%m월")  # datetime 변환
-
-    return df, df_long
-
-df_wide, df_long = load_data()
+# 정상적으로 로딩되었을 경우 진행
+if df_wide is not None:
+    st.write("데이터 미리보기:")
+    st.dataframe(df_wide.head())
 
 # --------------------------------------------------------------------------------
 # 2) 도시 선택 → 선 그래프 --------------------------------------------------------
