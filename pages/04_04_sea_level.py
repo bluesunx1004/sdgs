@@ -55,28 +55,34 @@ st.markdown("### 🗺️ 전 세계 해수면 상승 분포")
 
 # 지도용 데이터 정제
 map_data = df.dropna(subset=["latitude", "longitude", "Change_1978_2018"]).copy()
+
+# 숫자형으로 변환
 map_data["latitude"] = pd.to_numeric(map_data["latitude"], errors="coerce")
 map_data["longitude"] = pd.to_numeric(map_data["longitude"], errors="coerce")
 map_data["Change_1978_2018"] = pd.to_numeric(map_data["Change_1978_2018"], errors="coerce")
 
+# 유효한 수치만 필터링
 map_data = map_data[
     map_data["latitude"].notnull() &
     map_data["longitude"].notnull() &
     map_data["Change_1978_2018"].notnull() &
-    ~map_data["Change_1978_2018"].isin([np.inf, -np.inf])
+    map_data["Change_1978_2018"].apply(np.isfinite)
 ]
 
+# 빈 데이터 처리
 if map_data.empty:
     st.warning("유효한 지도 데이터를 찾을 수 없습니다.")
 else:
-    fig_map = px.scatter_geo(map_data,
-                             lat="latitude",
-                             lon="longitude",
-                             color="Change_1978_2018",
-                             hover_name="location",
-                             size="Change_1978_2018",
-                             projection="natural earth",
-                             title="지역별 해수면 상승 분포")
+    fig_map = px.scatter_geo(
+        map_data,
+        lat="latitude",
+        lon="longitude",
+        color="Change_1978_2018",
+        hover_name="location",
+        size="Change_1978_2018",
+        projection="natural earth",
+        title="지역별 해수면 상승 분포"
+    )
     fig_map.update_layout(title_font_size=18)
     st.plotly_chart(fig_map, use_container_width=True)
 
