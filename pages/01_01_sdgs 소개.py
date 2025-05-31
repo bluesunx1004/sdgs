@@ -130,8 +130,13 @@ SDGS = [
 
 st.set_page_config(page_title="SDGs 소개", layout="wide")
 st.title("🌍 지속가능발전목표 (SDGs) 알아보기")
-st.markdown("유엔이 정한 **17가지 지속가능발전목표(SDGs)** 를 살펴보세요!")
+st.markdown("""
+UN은 2015년, 193개 회원국과 함께 **2030년까지 달성해야 할 17가지 지속가능발전목표(Sustainable Development Goals, SDGs)**를 채택했습니다.  
+이 목표들은 **빈곤, 기아, 기후 변화, 교육, 환경, 평등** 등 인류가 직면한 다양한 문제들을 해결하고자 합니다.  
+아래에서 각 목표를 살펴보고, 여러분이 관심 있는 주제를 선택해보세요!
 
+---
+""")
 # 3개씩 묶어서 한 줄씩 배치
 for i in range(0, len(SDGS), 3):
     cols = st.columns(3)
