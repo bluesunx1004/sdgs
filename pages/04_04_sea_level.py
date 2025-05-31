@@ -42,7 +42,14 @@ st.plotly_chart(fig_bar, use_container_width=True)
 # 3️⃣ 국가별 상세 분석
 # -------------------
 st.markdown("### 🔍 특정 지역 상세 해수면 변화 분석")
-selected_location = st.selectbox("지역 선택", df["location"].unique())
+
+# 지역 + 국가명으로 표시
+df["location_country"] = df["location"] + " (" + df["country"] + ")"
+location_map = dict(zip(df["location_country"], df["location"]))
+
+selected_display = st.selectbox("지역 선택", df["location_country"].sort_values())
+selected_location = location_map[selected_display]  # 실제 location 값
+
 row = df[df["location"] == selected_location].iloc[0]
 
 # 해수면 시계열
@@ -50,7 +57,8 @@ sea_level_series = row[year_columns].reset_index()
 sea_level_series.columns = ["Year", "Sea_Level"]
 sea_level_series["Year"] = sea_level_series["Year"].astype(int)
 
-fig_detail = px.line(sea_level_series, x="Year", y="Sea_Level", title=f"{selected_location} 해수면 변화 추이")
+fig_detail = px.line(sea_level_series, x="Year", y="Sea_Level", 
+                     title=f"{selected_location} ({row['country']}) 해수면 변화 추이")
 st.plotly_chart(fig_detail, use_container_width=True)
 
 col1, col2, col3 = st.columns(3)
