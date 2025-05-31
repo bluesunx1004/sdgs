@@ -54,9 +54,9 @@ ax1.tick_params(axis="y", labelcolor="darkgreen")
 ax2 = ax1.twinx()
 line = ax2.plot(
     yearly_df["연도"], yearly_df["발생 건 수"],
-    color="orangered", marker="o", linewidth=2, label="발생 건수(건)"
+    color="orangered", marker="o", linewidth=2, label="Number of occurrences"
 )
-ax2.set_ylabel("number(건)", color="orangered")
+ax2.set_ylabel("number", color="orangered")
 ax2.tick_params(axis="y", labelcolor="orangered")
 
 # 범례 결합
