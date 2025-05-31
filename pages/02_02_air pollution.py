@@ -80,15 +80,20 @@ sel_cities = st.multiselect(
 
 if sel_cities:
     chart_data = df_long[df_long["지역"].isin(sel_cities)]
+    
+    # 정렬 기준 리스트 (문자열 순서)
+    month_order = (
+        chart_data.sort_values("순서")["월"]
+        .dropna()
+        .unique()
+        .tolist()
+    )
+
     line_chart = (
         alt.Chart(chart_data)
         .mark_line(point=True)
         .encode(
-            x=alt.X(
-                "월:N",
-                sort=alt.SortField(field="순서", op="min"),
-                title="연‧월"
-            ),
+            x=alt.X("월:N", sort=month_order, title="연‧월"),
             y=alt.Y("PM10:Q", title="PM10 농도(㎍/㎥)"),
             color="지역:N",
             tooltip=["지역", "월", "PM10"]
