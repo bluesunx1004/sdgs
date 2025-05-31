@@ -1,82 +1,118 @@
+# 2_📊_PM10_시각화.py
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-from sklearn.linear_model import LinearRegression
-import numpy as np
-from datetime import datetime, timedelta
+import altair as alt
+import pydeck as pdk
 
-st.set_page_config(page_title="미세먼지 예측", layout="wide")
-st.title("🌫 미세먼지 시각화 및 예측")
+st.set_page_config(page_title="PM10 시각화", page_icon="📊", layout="wide")
 
-# ✅ 예시 데이터 생성
+st.title("📊 월별‧도시별 미세먼지(PM10) 데이터 탐구")
+
+# --------------------------------------------------------------------------------
+# 1) 데이터 로드 & 전처리 ----------------------------------------------------------
+# --------------------------------------------------------------------------------
 @st.cache_data
 def load_data():
-    base_date = datetime.today() - timedelta(days=7)
-    data = []
-    for i in range(7):
-        for city in ['서울', '부산', '대구']:
-            date = base_date + timedelta(days=i)
-            pm10 = np.random.randint(30, 80) + (5 if city == '서울' else 0)
-            data.append({"날짜": date.date(), "지역": city, "PM10": pm10})
-    return pd.DataFrame(data)
+    # CSV는 /data 폴더 등에 두어도 되고, 경로만 맞추면 됩니다
+    df = pd.read_csv("data/미세먼지_PM10__월별_도시별_대기오염도.csv", encoding="cp949")
 
-df = load_data()
+    # 긴 형태(long)로 변환 → 선 그래프 편리
+    df_long = df.melt(id_vars=["지역"], var_name="월", value_name="PM10")
+    df_long["date"] = pd.to_datetime(df_long["월"], format="%Y년%m월")  # datetime 변환
 
-# 🎯 지역 선택
-city = st.selectbox("지역을 선택하세요", df['지역'].unique())
-city_df = df[df['지역'] == city].copy().sort_values(by='날짜')
+    return df, df_long
 
-# 📈 최근 7일 시각화
-st.subheader(f"📊 최근 7일간 {city} 미세먼지 (PM10) 농도")
-fig = px.line(city_df, x='날짜', y='PM10', markers=True, title=f"{city} PM10 추이")
-st.plotly_chart(fig, use_container_width=True)
+df_wide, df_long = load_data()
 
-# 🤖 사용자 입력 기반 예측: 원하는 "월"을 선택
-st.subheader("🔮 원하는 달의 PM10 예측")
+# --------------------------------------------------------------------------------
+# 2) 도시 선택 → 선 그래프 --------------------------------------------------------
+# --------------------------------------------------------------------------------
+st.subheader("① 도시별 월간 추세(선 그래프)")
 
-# 현재 날짜 기준 다음 6개월 중에서 선택
-today = datetime.today()
-month_options = [(today + timedelta(days=30*i)).strftime("%Y-%m") for i in range(1, 7)]
-selected_month_str = st.selectbox("예측할 월을 선택하세요", month_options)
+city_options = df_wide["지역"].unique().tolist()
+sel_cities = st.multiselect("도시(복수 선택 가능)", city_options, default=["서울특별시"])
 
-# 선택한 달의 첫날을 datetime 객체로 변환
-selected_month = datetime.strptime(selected_month_str + "-01", "%Y-%m-%d")
-last_date = datetime.combine(city_df['날짜'].max(), datetime.min.time())
-days_ahead = (selected_month - last_date).days
-
-def get_air_quality_grade(pm10):
-    if pm10 <= 30:
-        return "좋음", "😃 공기 상태가 매우 좋아요! 야외 활동하기에 적합합니다.", "success"
-    elif pm10 <= 80:
-        return "보통", "😐 공기 상태가 보통입니다. 민감군은 주의해주세요.", "info"
-    elif pm10 <= 150:
-        return "나쁨", "😷 공기가 탁해요. 가급적 외출을 자제하고, 마스크 착용을 권장합니다.", "warning"
-    else:
-        return "매우 나쁨", "😡 공기 질이 매우 나쁩니다. 외출을 삼가고 실내 환기도 주의하세요.", "error"
-
-        
-# 유효성 검사
-if days_ahead < 1:
-    st.warning("선택한 달은 이미 예측 범위 안에 있어요. 이후 달을 선택해 주세요.")
+if sel_cities:
+    chart_data = df_long[df_long["지역"].isin(sel_cities)]
+    line_chart = (
+        alt.Chart(chart_data)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("date:T", title="연‧월"),
+            y=alt.Y("PM10:Q", title="PM10 농도(㎍/㎥)"),
+            color="지역:N",
+            tooltip=["지역", "월", "PM10"]
+        )
+        .properties(height=400)
+    )
+    st.altair_chart(line_chart, use_container_width=True)
 else:
-    # ✅ 예측 및 등급 처리 코드: 전부 이 안에서만 실행해야 안전합니다
-    X = np.arange(len(city_df)).reshape(-1, 1)
-    y = city_df['PM10'].values
-    model = LinearRegression()
-    model.fit(X, y)
+    st.info("좌측 체크박스에서 한 개 이상 도시를 선택하세요.")
 
-    target_index = np.array([[len(city_df) + days_ahead - 1]])
-    predicted_pm10 = round(model.predict(target_index)[0], 2)
+# --------------------------------------------------------------------------------
+# 3) 월 선택 → 지도 시각화 --------------------------------------------------------
+# --------------------------------------------------------------------------------
+st.subheader("② 선택 월 지도 시각화")
 
-    grade, message, msg_type = get_air_quality_grade(predicted_pm10)
+# 월 컬럼만 추출해 셀렉트박스 옵션으로
+month_cols = [c for c in df_wide.columns if c != "지역"]
+sel_month = st.selectbox("보고 싶은 월", month_cols, index=len(month_cols)-1)
 
-    st.success(f"📌 예측된 {selected_month_str}의 PM10 수치는 **{predicted_pm10} ㎍/m³** 입니다.")
-    
-    if msg_type == "success":
-        st.success(f"🌬 예보된 등급: **{grade}**  \n{message}")
-    elif msg_type == "info":
-        st.info(f"🌬 예보된 등급: **{grade}**  \n{message}")
-    elif msg_type == "warning":
-        st.warning(f"🌬 예보된 등급: **{grade}**  \n{message}")
-    else:
-        st.error(f"🌬 예보된 등급: **{grade}**  \n{message}")
+# 한국 주요 행정구역 중심 좌표(대략) ------------------------------------------------
+city_coords = {
+    "서울특별시": (37.5665, 126.9780), "부산광역시": (35.1796, 129.0756),
+    "대구광역시": (35.8714, 128.6014), "인천광역시": (37.4563, 126.7052),
+    "광주광역시": (35.1595, 126.8526), "대전광역시": (36.3504, 127.3845),
+    "울산광역시": (35.5384, 129.3114), "세종특별자치시": (36.4800, 127.2890),
+    "경기도": (37.4133, 127.5183),   "강원특별자치도": (37.8228, 128.1555),
+    "충청북도": (36.6358, 127.4914), "전북특별자치도": (35.8200, 127.1088),
+    "전라남도": (34.8160, 126.4630), "경상북도": (36.4919, 128.8889),
+    "경상남도": (35.4606, 128.2132), "제주특별자치도": (33.4996, 126.5312),
+}
+
+map_df = (
+    df_wide[["지역", sel_month]]
+    .assign(lat=lambda d: d["지역"].map(lambda x: city_coords[x][0]),
+            lon=lambda d: d["지역"].map(lambda x: city_coords[x][1]),
+            radius=lambda d: d[sel_month] * 500,           # 농도에 비례한 원 크기
+            pm=lambda d: d[sel_month])                     # 툴팁용 별도 컬럼
+)
+
+layer = pdk.Layer(
+    "ScatterplotLayer",
+    data=map_df,
+    get_position="[lon, lat]",
+    get_radius="radius",
+    get_fill_color="[255, 100, 50, 160]",  # 불투명도 α=160
+    pickable=True,
+    auto_highlight=True,
+)
+
+view_state = pdk.ViewState(latitude=36.5, longitude=127.8, zoom=5.5)
+st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state,
+                         tooltip={"text": "{지역}\nPM10: {pm} ㎍/㎥"}))
+
+# --------------------------------------------------------------------------------
+# 4) 학생 토론 질문 · 교육적 함의 · 확장 활동 --------------------------------------
+# --------------------------------------------------------------------------------
+st.markdown("---")
+st.subheader("🗣️ 학생 토론 질문")
+st.markdown("""
+1. **도시별·계절별로 PM10 농도가 달라지는 가장 큰 요인은 무엇일까요?**  
+2. **SDGs 목표 11 ‘지속가능한 도시와 공동체’ 달성을 위해** 각 도시가 취할 수 있는 대기질 개선 정책은 무엇이 있을까요?  
+3. **여러분이 사는 지역**의 실제 체감 공기 질과 데이터가 다른 부분이 있다면, 왜 그럴지 가설을 세워보세요.
+""")
+
+st.subheader("🎓 교육적 함의")
+st.markdown("""
+- **데이터 해석 역량**: 시계열‧공간 데이터를 함께 분석하며 패턴·상관관계를 파악  
+- **과학·사회 융합**: 기상·산업·교통 등 요인과 연계해 과학적 근거 기반 정책 제안  
+- **SDGs 연결**: 대기오염이 건강(Goal 3), 기후(Goal 13)와도 긴밀히 연결돼 있음을 이해
+""")
+
+st.subheader("🚀 확장 활동")
+st.markdown("""
+- **기상 데이터(기온·풍속 등)**를 추가해 다중 회귀 분석 → PM10 농도 예측 모델 만들기  
+- **다른 대기오염물질(PM2.5·NO₂ 등)**로 지표 확장, SDGs Goal 3∙13 탐구 심화  
+- **현장 중심 프로젝트**: 지역 의회·시청에 대기 개선 정책 제안서 또는 인포그래픽 제작·발표
+""")
