@@ -31,7 +31,7 @@ if not DATA_PATH.exists():
     """)
     uploaded = st.file_uploader("🔄 여기서 직접 CSV 업로드하기", type="csv")
     if uploaded:
-        df_wide = pd.read_csv(uploaded, encoding="cp949")
+        df_wide = pd.read_csv(uploaded, encoding="utf-8")
     else:
         st.stop()
 else:
