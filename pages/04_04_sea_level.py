@@ -29,14 +29,25 @@ st.plotly_chart(fig_line, use_container_width=True)
 # -------------------
 # 2️⃣ 해수면 상승량 상위 지역
 # -------------------
+# -------------------
+# 2️⃣ 해수면 상승량 상위 지역
+# -------------------
 df["Change_1978_2018"] = df["2018"] - df["1978"]
-top_rising = df.sort_values(by="Change_1978_2018", ascending=False).head(10)
+top_rising = df.sort_values(by="Change_1978_2018", ascending=False).head(10).copy()
+
+# 지역 + 국가명 조합 컬럼 추가
+top_rising["location_country"] = top_rising["location"] + " (" + top_rising["country"] + ")"
 
 st.markdown("### 📌 해수면 상승이 큰 지역 Top 10")
-fig_bar = px.bar(top_rising, x="location", y="Change_1978_2018", color="continent",
-                 title="1978~2018년 해수면 상승량 상위 지역", labels={"Change_1978_2018": "해수면 상승(mm)"})
-fig_bar.update_layout(title_font_size=18)
+fig_bar = px.bar(top_rising, 
+                 x="location_country", 
+                 y="Change_1978_2018", 
+                 color="continent",
+                 title="1978~2018년 해수면 상승량 상위 지역",
+                 labels={"Change_1978_2018": "해수면 상승(mm)", "location_country": "지역 (국가)"})
+fig_bar.update_layout(title_font_size=18, xaxis_tickangle=-30)
 st.plotly_chart(fig_bar, use_container_width=True)
+
 
 # -------------------
 # 3️⃣ 국가별 상세 분석
