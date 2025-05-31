@@ -46,8 +46,8 @@ bars = ax1.bar(
     yearly_df["연도"], yearly_df["피해면적(ha)"],
     color="darkgreen", alpha=0.6, label="피해 면적(ha)"
 )
-ax1.set_xlabel("연도")
-ax1.set_ylabel("피해 면적(ha)", color="darkgreen")
+ax1.set_xlabel("year")
+ax1.set_ylabel("Damaged Area(ha)", color="darkgreen")
 ax1.tick_params(axis="y", labelcolor="darkgreen")
 
 # ② 발생 건수 (선, 오른쪽 y축)
@@ -56,7 +56,7 @@ line = ax2.plot(
     yearly_df["연도"], yearly_df["발생 건 수"],
     color="orangered", marker="o", linewidth=2, label="발생 건수(건)"
 )
-ax2.set_ylabel("발생 건수(건)", color="orangered")
+ax2.set_ylabel("number(건)", color="orangered")
 ax2.tick_params(axis="y", labelcolor="orangered")
 
 # 범례 결합
