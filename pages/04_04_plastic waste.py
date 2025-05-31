@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from pathlib import Path
 
 # 🌍 페이지 설정
 st.set_page_config(page_title="국가별 플라스틱 폐기물 현황", layout="wide")
