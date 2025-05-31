@@ -10,7 +10,7 @@ st.set_page_config(page_title="해수면 상승 분석 대시보드", layout="wi
 st.title("🌊 기후변화와 해수면 상승 분석")
 
 # CSV 파일 불러오기
-csv_path = Path("/mnt/data/sealevel_data_download.csv")  # 업로드한 파일 경로
+csv_path = Path("sealevel_data_download.csv")  # 업로드한 파일 경로
 df = pd.read_csv(csv_path)
 
 # 데이터 전처리 (예: 컬럼 확인)
