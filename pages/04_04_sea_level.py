@@ -29,9 +29,7 @@ st.plotly_chart(fig_line, use_container_width=True)
 # -------------------
 # 2️⃣ 해수면 상승량 상위 지역
 # -------------------
-# -------------------
-# 2️⃣ 해수면 상승량 상위 지역
-# -------------------
+
 df["Change_1978_2018"] = df["2018"] - df["1978"]
 top_rising = df.sort_values(by="Change_1978_2018", ascending=False).head(10).copy()
 
@@ -71,7 +69,7 @@ sea_level_series["Year"] = sea_level_series["Year"].astype(int)
 fig_detail = px.line(sea_level_series, x="Year", y="Sea_Level", 
                      title=f"{selected_location} ({row['country']}) 해수면 변화 추이")
 st.plotly_chart(fig_detail, use_container_width=True)
-
+st.caption("💡 그래프에서 데이터가 없는 연도는 관측값이 존재하지 않아 빈칸(NaN)으로 표시됩니다.")
 col1, col2, col3 = st.columns(3)
 col1.metric("1978년 해수면", f"{row['1978']} mm")
 col2.metric("2018년 해수면", f"{row['2018']} mm")
