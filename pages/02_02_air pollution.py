@@ -25,20 +25,42 @@ def try_read_csv(path_or_file):
             continue
     st.error("❌ 지원하는 인코딩 형식으로 파일을 열 수 없습니다.")
     return None
-
-# 파일 경로 기반 로드 (배포 시 실제 경로로 수정)
+# ---------------------
+# 파일 경로 또는 업로드
+# ---------------------
 DATA_PATH = Path(__file__).parent / "미세먼지_PM10__월별_도시별_대기오염도.csv"
 
-# 파일 있으면 우선 시도
 if DATA_PATH.exists():
     df_wide = try_read_csv(DATA_PATH)
 else:
-    st.warning("⚠️ 파일이 자동으로 로드되지 않았습니다. 아래에서 업로드 해주세요.")
     uploaded = st.file_uploader("📤 CSV 파일 업로드", type=["csv"])
     if uploaded:
         df_wide = try_read_csv(uploaded)
     else:
         st.stop()
+
+# ---------------------
+# 데이터 전처리 및 변환
+# ---------------------
+if df_wide is not None:
+    try:
+        # 첫 번째 열을 '지역'으로 간주
+        df_long = df_wide.melt(id_vars=[df_wide.columns[0]], var_name="월", value_name="PM10")
+        df_long.rename(columns={df_long.columns[0]: "지역"}, inplace=True)
+
+        # 도시 선택
+        sel_cities = st.multiselect("도시 선택", df_long["지역"].unique(), default=df_long["지역"].unique()[:5])
+        chart_data = df_long[df_long["지역"].isin(sel_cities)]
+
+        st.line_chart(
+            chart_data.pivot(index="월", columns="지역", values="PM10"),
+            use_container_width=True
+        )
+
+    except Exception as e:
+        st.error("📛 데이터 처리 중 오류 발생: " + str(e))
+else:
+    st.stop()
 
 # 정상적으로 로딩되었을 경우 진행
 if df_wide is not None:
