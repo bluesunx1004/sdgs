@@ -2,18 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
+import os
+
 
 # 🌍 페이지 설정
 st.set_page_config(page_title="국가별 플라스틱 폐기물 현황", layout="wide")
 st.title("🌍 국가별 플라스틱 폐기물 현황 분석 대시보드")
 
-# 데이터 로드
-import os
-import pandas as pd
 
-base_path = os.getcwd()
-csv_path = os.path.join(base_path, "Plastic Waste Around the World.csv")
+csv_path = os.path.join(os.path.dirname(__file__), "..", "Plastic Waste Around the World.csv")
 df = pd.read_csv(csv_path)
+
+
 # 위험도 수치화
 risk_map = {"Low": 1, "Medium": 2, "High": 3, "Very_High": 4}
 df["Risk_Level_Num"] = df["Coastal_Waste_Risk"].map(risk_map)
