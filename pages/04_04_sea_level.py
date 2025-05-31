@@ -1,69 +1,78 @@
-# climate_sealevel_dashboard.py
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from pathlib import Path
+import os
 
-# 페이지 설정
-st.set_page_config(page_title="해수면 상승 분석 대시보드", layout="wide")
-st.title("🌊 기후변화와 해수면 상승 분석")
+# 🌊 페이지 설정
+st.set_page_config(page_title="해수면 상승 분석", layout="wide")
+st.title("🌊 전지구 해수면 상승 분석 대시보드")
 
-# CSV 파일 불러오기
-csv_path = Path("sealevel_data_download.csv")  # 업로드한 파일 경로
+# 📂 데이터 불러오기
+csv_path = os.path.join(os.path.dirname(__file__), "..", "sealevel_data_download.csv")
 df = pd.read_csv(csv_path)
 
-# 데이터 전처리 (예: 컬럼 확인)
-st.markdown("#### 데이터 미리보기")
-st.dataframe(df.head())
+# 📆 연도별 열만 추출
+year_cols = [col for col in df.columns if col.startswith("19") or col.startswith("20")]
+df_long = df.melt(id_vars=["location", "country", "continent"], 
+                  value_vars=year_cols, 
+                  var_name="Year", 
+                  value_name="Sea_Level_mm")
 
-# 년도별 해수면 상승 시각화
-st.markdown("### 📈 연도별 해수면 상승 추세")
-fig = px.line(df, x="Year", y="GMSL", title="전지구 평균 해수면(GMSL) 변화 추이", labels={"GMSL": "해수면(mm)"})
+# 숫자형으로 변환
+df_long["Year"] = pd.to_numeric(df_long["Year"], errors="coerce")
+df_long.dropna(subset=["Year", "Sea_Level_mm"], inplace=True)
+
+# 📈 전지구 해수면 평균 변화 추이 (국가 전체 평균)
+avg_by_year = df_long.groupby("Year")["Sea_Level_mm"].mean().reset_index()
+
+st.markdown("### 📈 전지구 평균 해수면 상승 추이")
+fig = px.line(avg_by_year, x="Year", y="Sea_Level_mm",
+              labels={"Sea_Level_mm": "해수면(mm)"},
+              title="전지구 평균 해수면(GMSL) 변화 추이")
 fig.update_layout(title_font_size=18)
 st.plotly_chart(fig, use_container_width=True)
 
-# 특정 기간 필터링
-st.markdown("### 🔍 특정 기간 필터")
-start_year, end_year = st.slider("연도 범위 선택", int(df["Year"].min()), int(df["Year"].max()), (1993, 2023))
-filtered = df[(df["Year"] >= start_year) & (df["Year"] <= end_year)]
+# 🌍 대륙별 해수면 변화 추이
+st.markdown("### 🌍 대륙별 해수면 상승 비교")
 
-fig2 = px.line(filtered, x="Year", y="GMSL", title=f"{start_year} ~ {end_year} 해수면 변화")
+continent_avg = df_long.groupby(["continent", "Year"])["Sea_Level_mm"].mean().reset_index()
+
+fig2 = px.line(continent_avg, x="Year", y="Sea_Level_mm", color="continent",
+               title="대륙별 평균 해수면 변화 추이", labels={"Sea_Level_mm": "해수면(mm)"})
+fig2.update_layout(title_font_size=18, legend_title_text="대륙")
 st.plotly_chart(fig2, use_container_width=True)
 
-# 통계 지표 출력
-st.markdown("### 📊 통계 정보")
-st.metric("📏 평균 해수면(mm)", round(filtered["GMSL"].mean(), 2))
-st.metric("📈 최대값", round(filtered["GMSL"].max(), 2))
-st.metric("📉 최소값", round(filtered["GMSL"].min(), 2))
+# 🔍 특정 국가 선택 분석
+st.markdown("### 🔍 국가별 해수면 변화 분석")
 
-# 🌱 SDGs 연계 시각화 안내
-st.markdown("### 🌱 SDGs와의 연계")
-st.markdown("""
-- **SDG 13 (기후 행동)**: 해수면 상승은 기후 변화의 직접적인 결과입니다. 탄소 배출 저감의 필요성을 강조합니다.  
-- **SDG 14 (해양 생태계 보호)**: 해양 생태계와 해안 지역 커뮤니티에 직접적인 영향을 줍니다.
-""")
+selected_country = st.selectbox("분석할 국가를 선택하세요", sorted(df_long["country"].unique()))
+country_df = df_long[df_long["country"] == selected_country]
+
+fig3 = px.line(country_df, x="Year", y="Sea_Level_mm", color="location",
+               title=f"{selected_country} 해수면 변화 추이", labels={"Sea_Level_mm": "해수면(mm)"})
+fig3.update_layout(title_font_size=18, legend_title_text="관측소 위치")
+st.plotly_chart(fig3, use_container_width=True)
 
 # 💬 학생 토론 질문
 st.markdown("### 💬 학생 토론 질문")
 st.markdown("""
-- 해수면 상승은 어떤 국가나 지역에 더 큰 영향을 줄까요?
-- 이러한 변화가 해양 생태계에 어떤 영향을 줄 수 있을까요?
-- 기후 변화에 대응하기 위한 국제적 협력 방안은 무엇이 있을까요?
+- 해수면 상승이 우리 삶에 어떤 영향을 미칠 수 있을까요?
+- 어떤 지역이 가장 큰 영향을 받을까요?
+- 이 문제 해결을 위해 어떤 국제적 협력이 필요할까요?
 """)
 
 # 📚 교육적 함의
 st.markdown("### 📚 교육적 함의")
 st.markdown("""
-- 실제 데이터를 바탕으로 과학적 사실을 파악하고 비판적 사고 능력을 기를 수 있습니다.  
-- 기후변화와 지속가능성의 상관관계를 이해하고 SDGs 목표와 실생활 연결을 경험할 수 있습니다.  
-- 데이터 리터러시, 시각화, 환경 문제 해결 능력을 종합적으로 향상시킬 수 있습니다.
+- 해수면 상승은 기후 변화의 명확한 지표이며, SDGs 목표 중 '13. 기후 변화 대응'과 밀접한 관련이 있음  
+- 과학적 데이터 분석을 통해 글로벌 이슈를 이해하고, 지역적 대응을 고민할 수 있는 기회 제공  
+- 다양한 관측소 데이터를 통해 과학적 탐구 능력 강화
 """)
 
 # 🔍 확장 활동
 st.markdown("### 🔍 확장 활동")
 st.markdown("""
-- 지역별 해수면 변화 자료를 추가로 조사하여 비교 분석  
-- 기후 행동 캠페인 기획 및 실천 방안 제시  
-- 데이터 기반의 뉴스 아티클 또는 인포그래픽 제작
+- 우리 지역의 해수면 변화나 기후 변화 현상 조사  
+- 모의 유엔 회의 형식으로 기후 변화 대응 전략 발표  
+- 해양 생태계 보존을 위한 캠페인 기획
 """)
