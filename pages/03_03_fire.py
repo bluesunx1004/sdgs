@@ -82,13 +82,6 @@ fig_bar = px.bar(
 )
 st.plotly_chart(fig_bar, use_container_width=True)
 
-# 4-2) 히트맵(데이터프레임 + 그라디언트)
-st.subheader("🗺 지역별 월별 산불 발생 건수 (히트맵)")
-heatmap_df = melted.pivot(index="지역", columns="월", values="산불 발생 건수")
-st.dataframe(
-    heatmap_df.style.background_gradient(cmap="OrRd"),
-    height=500
-)
 
 # ──────────────────────── 5. 토론·교육적 요소 ────────────────
 st.markdown("---")
