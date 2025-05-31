@@ -44,7 +44,7 @@ fig, ax1 = plt.subplots(figsize=(12, 5))
 # ① 피해 면적 (막대, 왼쪽 y축)
 bars = ax1.bar(
     yearly_df["연도"], yearly_df["피해면적(ha)"],
-    color="darkgreen", alpha=0.6, label="피해 면적(ha)"
+    color="darkgreen", alpha=0.6, label="Damaged Area(ha)"
 )
 ax1.set_xlabel("year")
 ax1.set_ylabel("Damaged Area(ha)", color="darkgreen")
