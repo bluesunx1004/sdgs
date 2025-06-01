@@ -2,26 +2,33 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# CSV 불러오기
-df = pd.read_csv("born baby.csv")
-
-# 컬럼명 정리
-df.columns = ["연도", "출생아수(천 명)"]
-
-# 연도 정수로 변환 (혹시 모를 문자열 처리)
-df["연도"] = pd.to_numeric(df["연도"], errors="coerce")
-df["출생아수(천 명)"] = pd.to_numeric(df["출생아수(천 명)"], errors="coerce")
-
-# 결측치 제거
-df = df.dropna()
-
-# ---------------- 앱 시작 ----------------
 st.set_page_config(page_title="출산율과 SDGs", layout="centered")
 
 st.title("👶 대한민국 출생아 수 변화와 지속가능한 미래")
-st.markdown("1970년부터 2023년까지의 출생아 수 데이터를 기반으로 SDGs와의 연관성을 탐구해보는 앱입니다.")
 
-# 📊 시각화
+# CSV 불러오기
+df = pd.read_csv("born baby.csv")
+
+# 컬럼명 자동 출력
+st.write("📂 현재 DataFrame의 컬럼:")
+st.write(df.columns)
+st.write("🔢 컬럼 수:", len(df.columns))
+st.dataframe(df.head())
+
+# 'Unnamed: 0'가 있는 경우 제거
+if 'Unnamed: 0' in df.columns:
+    df = df.drop(columns=['Unnamed: 0'])
+
+# 열 개수 확인 후 열 이름 지정
+if len(df.columns) == 2:
+    df.columns = ["연도", "출생아수(천 명)"]
+
+# 숫자형 변환
+df["연도"] = pd.to_numeric(df["연도"], errors="coerce")
+df["출생아수(천 명)"] = pd.to_numeric(df["출생아수(천 명)"], errors="coerce")
+df = df.dropna()
+
+# 시각화
 st.subheader("📈 출생아 수 변화 추이")
 fig = px.line(df, x="연도", y="출생아수(천 명)", markers=True,
               title="대한민국 출생아 수 추이 (1970~2023)",
