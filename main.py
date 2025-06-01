@@ -36,3 +36,13 @@ st.markdown("""
 
 👉 왼쪽 메뉴에서 시작할 내용을 선택해보세요!
 """)
+
+
+
+# ▶ 통계청 SDGs 지표 사이트 안내
+st.markdown("""
+### 🔗 SDGs 데이터 한눈에 보기  
+국내 SDGs 지표를 종합적으로 확인하려면 **통계청 SDGs 지표 대시보드**를 참고하세요.  
+[👉 통계청 SDGs 지표 사이트 바로가기](https://kostat-sdg-kor.github.io/sdg-indicators/goals/)
+""")
+
