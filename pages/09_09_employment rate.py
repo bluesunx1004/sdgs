@@ -9,6 +9,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 
 # ───────────────────── 페이지 설정 ─────────────────────
@@ -16,9 +17,7 @@ st.set_page_config(page_title="🇰🇷 청년 고용 동향 분석", layout="wi
 st.title("👩‍💼 우리나라 청년 고용 동향 분석 (SDG 8)")
 
 # ───────────────────── 데이터 불러오기 ──────────────────
-
 def read_csv(name: str) -> pd.DataFrame:
-    """앱 폴더 상위(root)에 있는 CSV를 읽거나, 업로드 위젯 제공"""
     path = os.path.join(os.path.dirname(__file__), "..", name)
     if os.path.exists(path):
         return pd.read_csv(path, encoding="utf-8-sig")
@@ -30,42 +29,45 @@ def read_csv(name: str) -> pd.DataFrame:
 raw = read_csv("employmentrate.csv")
 
 # ───────────────────── 데이터 전처리 ─────────────────────
-raw = raw.set_index("Unnamed: 0").T  # 행·열 전치, 지표를 열로
+raw = raw.set_index("Unnamed: 0").T
 raw.index.name = "연도"
-
-# 쉼표 제거 & 실수형 변환
 raw = raw.applymap(lambda x: float(str(x).replace(",", "")))
-
-# 지표 계산: 고용률, 경제활동참가율
 raw["고용률(%)"] = raw["취업자"] / raw["경제활동인구"] * 100
 raw["참여율(%)"] = raw["경제활동인구"] / raw["생산가능인구"] * 100
-
-# 연도 열을 앞으로, int 변환
 raw = raw.reset_index()
 raw["연도"] = raw["연도"].astype(int)
 
-# ───────────────────── 롱 데이터 변환 ────────────────────
-df_long = raw.melt(id_vars="연도", var_name="지표", value_name="값")
+# ───────────────────── 주요 지표 시각화 ───────────────────
+st.markdown("### 📈 주요 지표 개별 추이 시각화")
+metric_cols = ["경제활동인구", "취업자", "실업률", "고용률(%)", "참여율(%)"]
+sel_metric = st.selectbox("📊 분석할 지표 선택", metric_cols, index=2)
 
-# ───────────────────── 비중 추세 그래프 ──────────────────
-st.markdown("### 📈 연도별 주요 지표 추이")
-metrics = sorted(df_long["지표"].unique())
-sel_metrics = st.multiselect("분석할 지표 선택", metrics, default=["경제활동인구", "취업자", "실업률", "고용률(%)"])
+fig_line = px.line(raw, x="연도", y=sel_metric, markers=True,
+                   title=f"'{sel_metric}' 연도별 변화 추이",
+                   labels={"연도": "연도", sel_metric: sel_metric})
+fig_line.update_traces(line=dict(width=3), marker=dict(size=8))
+fig_line.update_layout(title_font_size=18)
+st.plotly_chart(fig_line, use_container_width=True)
 
-plot_df = df_long[df_long["지표"].isin(sel_metrics)]
-fig = px.line(plot_df, x="연도", y="값", color="지표", markers=True,
-              title="청년 고용 주요 지표 연도별 추이",
-              labels={"연도": "연도", "값": "값"})
-fig.update_layout(title_font_size=18, legend_title_text="지표")
-st.plotly_chart(fig, use_container_width=True)
+# ───────────────────── 지표 간 관계 시각화 ──────────────────
+st.markdown("### 🔄 고용률과 실업률 관계 보기")
+scatter = go.Figure()
+scatter.add_trace(go.Scatter(x=raw["고용률(%)"], y=raw["실업률"],
+                             mode="markers+text",
+                             text=raw["연도"],
+                             textposition="top center",
+                             marker=dict(size=12, color="orange")))
+scatter.update_layout(title="고용률과 실업률의 관계 (연도별)",
+                      xaxis_title="고용률(%)",
+                      yaxis_title="실업률(%)",
+                      height=500)
+st.plotly_chart(scatter, use_container_width=True)
 
 # ───────────────────── 특정 연도 지표 비교 ────────────────
-st.markdown("### 📊 특정 연도별 지표 값")
+st.markdown("### 🧭 특정 연도별 지표 요약")
 sel_year = st.slider("연도 선택", int(raw["연도"].min()), int(raw["연도"].max()), int(raw["연도"].max()))
-
 year_df = raw[raw["연도"] == sel_year].drop(columns="연도").T.reset_index()
 year_df.columns = ["지표", "값"]
-
 bar_fig = px.bar(year_df, x="지표", y="값", text="값",
                  title=f"{sel_year}년 청년 고용 지표 현황")
 bar_fig.update_traces(texttemplate='%{text:.1f}', textposition='outside')
@@ -77,7 +79,6 @@ with st.expander("🔍 원본 데이터 보기"):
     st.dataframe(raw)
 
 # ───────────────────── SDG 연계 및 수업 요소 ───────────────
-
 st.markdown("### 💬 학생 토론 질문")
 st.markdown("""
 1. **실업률이 가장 높았던 해**는 언제이며, 그 해의 사회·경제적 요인은 무엇이었나요?  
