@@ -1,25 +1,31 @@
+# pages/07_07_birth_rate_korea.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import os
 
-st.set_page_config(page_title="출산율과 SDGs", layout="centered")
+# ───────────────────────── 페이지 설정 ─────────────────────────
+st.set_page_config(page_title="🇰🇷 출생아 수 분석", layout="wide")
+st.title("👶 대한민국 출생아 수 시각화 (SDG 3, 11)")
 
-st.title("👶 대한민국 출생아 수 변화와 지속가능한 미래")
+# ───────────────────────── 데이터 로드 ─────────────────────────
+def read_csv(name):
+    path = os.path.join(os.path.dirname(__file__), "..", name)
+    if os.path.exists(path):
+        return pd.read_csv(path)
+    upl = st.file_uploader(f"⬆️ {name} 업로드", type="csv", key=name)
+    if upl is not None:
+        return pd.read_csv(upl)
+    st.stop()
 
-# CSV 불러오기
-df = pd.read_csv("born baby.csv")
+df = read_csv("born baby2.csv")   # 파일명은 정확히 동일하게
 
-# 컬럼명 자동 출력
-st.write("📂 현재 DataFrame의 컬럼:")
-st.write(df.columns)
-st.write("🔢 컬럼 수:", len(df.columns))
-st.dataframe(df.head())
-
-# 'Unnamed: 0'가 있는 경우 제거
+# ───────────────────────── 전처리 ──────────────────────────────
+# 불필요한 열 제거
 if 'Unnamed: 0' in df.columns:
     df = df.drop(columns=['Unnamed: 0'])
 
-# 열 개수 확인 후 열 이름 지정
+# 컬럼명 정리
 if len(df.columns) == 2:
     df.columns = ["연도", "출생아수(천 명)"]
 
@@ -28,52 +34,48 @@ df["연도"] = pd.to_numeric(df["연도"], errors="coerce")
 df["출생아수(천 명)"] = pd.to_numeric(df["출생아수(천 명)"], errors="coerce")
 df = df.dropna()
 
-# 시각화
-st.subheader("📈 출생아 수 변화 추이")
-fig = px.line(df, x="연도", y="출생아수(천 명)", markers=True,
-              title="대한민국 출생아 수 추이 (1970~2023)",
-              labels={"출생아수(천 명)": "출생아 수 (천 명)", "연도": "연도"})
-st.plotly_chart(fig)
+# ───────────────────────── 출생아 수 추세 ─────────────────────
+st.markdown("### 📈 출생아 수 변화 추이")
 
-# 🔍 최근 10년 평균
-st.subheader("📉 최근 10년 평균 출생아 수")
-recent_mean = df[df["연도"] >= 2014]["출생아수(천 명)"].mean()
-st.write(f"최근 10년 평균 출생아 수는 **{recent_mean:.1f}천 명**입니다.")
+fig_birth = px.line(df, x="연도", y="출생아수(천 명)",
+                    markers=True,
+                    title="연도별 출생아 수 추이 (천 명 단위)",
+                    labels={"출생아수(천 명)": "출생아 수 (천 명)", "연도": "연도"})
+fig_birth.update_layout(title_font_size=18)
+st.plotly_chart(fig_birth, use_container_width=True)
 
-# 🌍 SDGs와의 연결
-st.subheader("🌍 지속가능발전목표(SDGs)와의 연결")
+# ───────────────────────── 최근 연도 강조 ──────────────────────
+st.markdown("### 📊 특정 연도의 출생아 수")
+
+sel_year = st.slider("연도 선택", int(df["연도"].min()), int(df["연도"].max()), int(df["연도"].max()))
+selected = df[df["연도"] == sel_year]
+
+if not selected.empty:
+    count = selected["출생아수(천 명)"].values[0]
+    st.metric(label=f"{sel_year}년 출생아 수", value=f"{count:,.0f}천 명")
+
+# ───────────────────────── 데이터 미리보기 ──────────────────────
+with st.expander("🔍 원본 데이터 보기"):
+    st.dataframe(df)
+
+# ───────────────────────── SDG 연계 & 교육 요소 ────────────────
+st.markdown("### 💬 학생 토론 질문")
 st.markdown("""
-출산율 감소는 다음과 같은 SDGs 목표와 깊은 관련이 있습니다:
-
-- **SDG 3: 건강과 웰빙** – 출산 의료, 산모 건강 관리  
-- **SDG 5: 성평등** – 경력단절, 육아 부담의 성별 불균형  
-- **SDG 8: 양질의 일자리와 경제성장** – 고용 불안정과 육아 환경  
-- **SDG 11: 지속 가능한 도시와 공동체** – 보육시설, 주거환경 등
-
+1. 출생아 수가 지속적으로 감소하는 원인은 무엇이라고 생각하나요?  
+2. 출생률 감소가 사회에 미치는 영향은 어떤 것이 있을까요?  
+3. **SDG 3 '건강과 웰빙'**, **SDG 11 '지속가능한 도시와 공동체'** 관점에서 어떤 정책이 필요할까요?
 """)
 
-# 🗣️ 토론 질문
-st.subheader("🗣️ 학생 토론 질문")
+st.markdown("### 📚 교육적 함의")
 st.markdown("""
-1. 출생아 수가 감소하면 우리 사회에 어떤 영향이 있을까요?  
-2. 청소년의 입장에서 아이를 낳고 기르기 쉬운 사회란 어떤 모습일까요?  
-3. 저출산 문제를 해결하기 위한 정책은 어떤 방향이어야 할까요?  
-4. 성평등과 출산율은 어떤 관계가 있을까요?
+- **인구통계 데이터 해석**: 출생률 변화를 수치로 이해하고 사회적 의미를 파악  
+- **지속가능성 이해**: 출산율과 복지·교육·주거 등 다양한 분야의 연결성 분석  
+- **미래 예측**: 데이터 기반 인구 구조 변화 예측 및 대응 방향 논의
 """)
 
-# 📚 교육적 함의
-st.subheader("📚 교육적 함의")
+st.markdown("### 🚀 확장 활동")
 st.markdown("""
-- **데이터를 통한 사회 변화 해석** 능력 향상  
-- **SDGs를 실제 사회 문제에 연결**하는 비판적 사고력 강화  
-- **정책적 상상력**과 **청소년의 시민 참여 의식** 고취
-""")
-
-# 🚀 확장 활동 제안
-st.subheader("🚀 확장 활동 제안")
-st.markdown("""
-- **국가별 출산율 비교 분석** (OECD 등과 비교)  
-- **출산율 예측 모델 만들기**: 간단한 회귀모델로 미래 예측  
-- **세대 간 인식 비교 조사**: 부모/조부모 인터뷰 과제  
-- **정책 제안 프로젝트**: 청소년이 생각하는 '아이 낳고 싶은 사회' 만들기
+- **지역별 출생률 조사**: 우리 지역과 다른 지역의 출생률 차이 비교  
+- **청소년 인식 조사**: 결혼·출산에 대한 또래 인식 설문 후 분석  
+- **국제 비교 분석**: 저출산 국가 vs 고출산 국가 정책 비교 및 시사점 도출
 """)
