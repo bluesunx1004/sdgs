@@ -137,6 +137,15 @@ UN은 2015년, 193개 회원국과 함께 **2030년까지 달성해야 할 17가
 
 ---
 """)
+
+
+# ▶ 통계청 SDGs 지표 사이트 안내
+st.markdown("""
+### 🔗 SDGs 데이터 한눈에 보기  
+국내 SDGs 지표를 종합적으로 확인하려면 **통계청 SDGs 지표 대시보드**를 참고하세요.  
+[👉 통계청 SDGs 지표 사이트 바로가기](https://kostat-sdg-kor.github.io/sdg-indicators/goals/)
+""")
+
 # 3개씩 묶어서 한 줄씩 배치
 for i in range(0, len(SDGS), 3):
     cols = st.columns(3)
