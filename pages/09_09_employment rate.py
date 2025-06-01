@@ -13,10 +13,12 @@ def load_data(path: str) -> pd.DataFrame:
     df = df.set_index("Unnamed: 0").T           # 행·열 전치
     df.index.name = "연도"
     df = df.applymap(lambda x: float(str(x).replace(",", "")))  # 숫자형 변환
-    # 추가 지표 계산
     df["고용률(%)"] = df["취업자"] / df["경제활동인구"] * 100
     df["참여율(%)"] = df["경제활동인구"] / df["생산가능인구"] * 100
-    return df.reset_index()
+    df.reset_index(inplace=True)
+    df["연도"] = df["연도"].astype(int)  # <-- 여기 추가!
+    return df
+
 
 data = load_data("employmentrate.csv")
 years = data["연도"].astype(int)
