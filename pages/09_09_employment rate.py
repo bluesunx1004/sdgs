@@ -10,8 +10,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
-import plotly.graph_objects as go
-
 
 # ───────────────────── 페이지 설정 ─────────────────────
 st.set_page_config(page_title="🇰🇷 청년 고용 동향 분석", layout="wide")
@@ -38,35 +36,19 @@ data["참여율(%)"] = data["경제활동인구"] / data["생산가능인구"] *
 data = data.reset_index()
 data["연도"] = data["연도"].astype(int)
 
-st.markdown("### 📊 고용률과 실업률 비교 시각화")
+# ───────────────────── 주요 지표 다중 선택 시각화 ─────────────────────
+st.markdown("### 📈 고용 지표 추이 분석")
+indicators = ["고용률(%)", "실업률", "참여율(%)"]
+selected = st.multiselect("분석할 지표를 선택하세요:", indicators, default=["고용률(%)", "실업률"])
 
-fig_dual = go.Figure()
-
-# 막대그래프: 고용률
-fig_dual.add_trace(go.Bar(
-    x=data["연도"], y=data["고용률(%)"],
-    name="고용률(%)", marker_color="deepskyblue", yaxis="y"
-))
-
-# 선그래프: 실업률
-fig_dual.add_trace(go.Scatter(
-    x=data["연도"], y=data["실업률"],
-    name="실업률", mode="lines+markers", line=dict(color="orange"), yaxis="y2"
-))
-
-# 레이아웃 설정
-fig_dual.update_layout(
-    title="청년 고용동향 (고용률 및 실업률)",
-    xaxis=dict(title="연도"),
-    yaxis=dict(title="고용률(%)", range=[30, 50], side="left"),
-    yaxis2=dict(title="실업률(%)", overlaying="y", side="right", range=[0, 14]),
-    legend=dict(x=0.01, y=0.99),
-    bargap=0.2,
-    width=900,
-    height=500
-)
-
-st.plotly_chart(fig_dual, use_container_width=True)
+if selected:
+    fig = px.line(data, x="연도", y=selected, markers=True,
+                  title="연도별 주요 고용 지표 변화",
+                  labels={"value": "비율 (%)", "variable": "지표"})
+    fig.update_layout(title_font_size=18)
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.warning("📌 최소 하나 이상의 지표를 선택하세요.")
 
 # ───────────────────── 데이터 미리보기 ───────────────────
 with st.expander("🔍 원본 데이터 보기"):
